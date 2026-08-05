@@ -1,9 +1,18 @@
-extends Node2D
+extends Node
 
-# Called when the node enters the scene tree for the first time.
+@onready var floor: TileMapLayer = $floor
+
+@onready var player: CharacterBody2D = $player
+
+@onready var grid_tile_map: Node = $grid_tile_map
+@onready var map_manager: Node = $map_manager
+
 func _ready() -> void:
-	pass # Replace with function body.
+	player.setup(grid_tile_map)
+	map_manager.setup(floor)
+	map_manager.render_tiles(["...",
+	"...",
+	"..."])
 
-# Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
 	pass
