@@ -12,6 +12,8 @@ enum Action {
 	INTERACT
 }
 
+var move_speed = 120
+
 var current_cursor_action: Action = Action.NONE
 var current_cursor_x: int = -1
 var current_cursor_y: int = -1
@@ -19,9 +21,15 @@ var current_cursor_y: int = -1
 var path_array: Array[Vector2i] = []
 var path_index: int = 0
 
+var current_tile = Vector2i.ZERO
+var next_tile = Vector2i.ZERO
+
+var target_position: Vector2
+var is_walking: bool = false
+
 
 func _physics_process(delta: float) -> void:
-	_tick_walk()
+	_tick_walk(delta)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -68,19 +76,49 @@ func _on_left_click(world_pos: Vector2) -> void:
 
 
 func _run_pathfind(target_tile: Vector2i) -> void:
-	var from_tile = get_current_tile()
+	var from_tile = next_tile
+	print(current_tile, next_tile, target_position)
 	path_array = grid_tile_map.get_move_path(from_tile, target_tile)
+	print(path_array)
 	path_index = 0
+	
+	if path_array.size() > 0 and path_array[0] == from_tile:
+		path_index = 1
+	
+	if not is_walking:
+		_advance_to_next_tile()
 
 
-func _tick_walk() -> void:
-	if path_index >= path_array.size():
+func _tick_walk(delta: float) -> void:
+	if not is_walking:
 		return
 	
-	var next_tile = path_array[path_index]
+	var remaining_distance = move_speed * delta
+	
+	while remaining_distance > 0.0 and is_walking:
+		var distance_to_target = global_position.distance_to(target_position)
+		
+		if remaining_distance >= distance_to_target:
+			global_position = target_position
+			current_tile = next_tile
+			remaining_distance -= distance_to_target
+			_advance_to_next_tile()
+		else:
+			global_position = global_position.move_toward(target_position, remaining_distance)
+			remaining_distance = 0.0
+
+func _advance_to_next_tile():
+	if path_index >= path_array.size():
+		is_walking = false
+		target_position = current_tile
+		return
+	
+	next_tile = path_array[path_index]
 	path_index += 1
-	position = grid_tile_map.tile_to_world(next_tile)
+	
+	target_position = grid_tile_map.tile_to_world(next_tile)
+	is_walking = true
 
 
 func get_current_tile() -> Vector2i:
-	return grid_tile_map.world_to_tile(global_position)
+	return current_tile

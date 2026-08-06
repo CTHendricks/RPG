@@ -9,10 +9,18 @@ extends Node
 
 func _ready() -> void:
 	player.setup(grid_tile_map)
+	player.position = Vector2(32.0, 16.0)
 	map_manager.setup(floor)
-	map_manager.render_tiles(["...",
-	"...",
-	"..."])
+	map_manager.render_tiles(["..........",
+	"..........",
+	"..........",
+	"..........",
+	"..........",
+	"..........",
+	"..........",
+	"..........",
+	"..........",
+	".........."])
 
 func _process(delta: float) -> void:
 	pass
